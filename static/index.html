@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f3d33">
+  <title>SpazaPilot · restock agent</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230f3d33'/><path d='M8 20l8-10 8 10' stroke='%23f2a516' stroke-width='3' fill='none' stroke-linecap='round'/></svg>">
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M7 21l9-11 9 11" /></svg></div>
+      <div>
+        <div class="brand-name">SpazaPilot</div>
+        <div class="shop" id="shopName">Your spaza</div>
+      </div>
+    </div>
+    <div class="modes" id="modes"></div>
+  </header>
+
+  <section class="budget card" id="budgetCard">
+    <div class="budget-row">
+      <div>
+        <div class="label">Left this week</div>
+        <div class="big" id="budgetLeft">R0</div>
+      </div>
+      <div class="right">
+        <div class="label">Autopay up to</div>
+        <div class="mid" id="autoLimit">R0</div>
+      </div>
+    </div>
+    <div class="meter"><div class="fill" id="budgetFill"></div></div>
+    <div class="tiny" id="budgetText"></div>
+  </section>
+
+  <!-- RESTOCK ------------------------------------------------------------ -->
+  <main>
+  <section class="view" id="view-restock">
+    <div class="card">
+      <h2>What do you need?</h2>
+      <p class="hint">Type it like you'd send a WhatsApp. English, isiXhosa or both.</p>
+      <textarea id="note" rows="4" placeholder="sugar 2, maas iphelile, need 3 bread, airtime R50"></textarea>
+      <div class="chips" id="examples">
+        <button class="chip" data-ex="sugar 2, maas iphelile, need 3 bread, airtime R50">Quick list</button>
+        <button class="chip" data-ex="iswekile 5, isonka 10, amasi iphelile, mealie meal 4, oil 6, amaqanda 2, airtime R100">Big Friday restock</button>
+        <button class="chip" data-ex="ubisi iphelile, candles 5, paraffin 6, soap 4">Load-shedding week</button>
+      </div>
+      <div class="row gap">
+        <button class="btn primary grow" id="parseBtn">Read my list</button>
+        <label class="btn ghost" for="photo" title="Upload a shelf photo">Shelf photo</label>
+        <input type="file" id="photo" accept="image/*" capture="environment" hidden>
+      </div>
+    </div>
+
+    <div class="card hidden" id="parsedCard">
+      <div class="row between">
+        <h2>Restock list</h2>
+        <span class="pill soft" id="engineTag"></span>
+      </div>
+      <p class="hint warn hidden" id="parseWarn"></p>
+      <ul class="items" id="items"></ul>
+      <p class="hint hidden" id="unrec"></p>
+      <button class="btn primary block" id="runBtn">Let SpazaPilot restock</button>
+      <p class="tiny center">Pays only within your guardrails. Anything bigger waits for your tap.</p>
+    </div>
+
+    <div id="result"></div>
+  </section>
+
+  <!-- APPROVALS ---------------------------------------------------------- -->
+  <section class="view hidden" id="view-approvals">
+    <h2 class="pad">Waiting for you</h2>
+    <div id="approvalList"></div>
+  </section>
+
+  <!-- LEDGER --------------------------------------------------------------- -->
+  <section class="view hidden" id="view-ledger">
+    <div class="card insight" id="insightCard">
+      <div class="row between"><h2>This week</h2><span class="pill soft" id="insightEngine"></span></div>
+      <ul id="insights"></ul>
+    </div>
+    <h2 class="pad">Agent ledger</h2>
+    <div id="ledgerList"></div>
+  </section>
+
+  <!-- SETTINGS --------------------------------------------------------- -->
+  <section class="view hidden" id="view-settings">
+    <div class="card">
+      <h2>Guardrails</h2>
+      <p class="hint">The agent can never spend past these. They're checked in code before every payment.</p>
+      <label class="field">Shop name<input id="sShop" type="text" maxlength="60"></label>
+      <label class="field">Weekly budget (R)<input id="sBudget" type="number" min="0" step="50" inputmode="numeric"></label>
+      <label class="field">Autopay limit per order (R)<input id="sLimit" type="number" min="0" step="50" inputmode="numeric"></label>
+      <label class="field">Max units per line before asking<input id="sQty" type="number" min="1" step="1" inputmode="numeric"></label>
+      <label class="field">Out-of-stock items must arrive within (days)<input id="sUrgent" type="number" min="1" max="7" step="1" inputmode="numeric"></label>
+      <label class="toggle"><input type="checkbox" id="sEnabled"><span>Autopay on</span></label>
+      <button class="btn primary block" id="saveBtn">Save guardrails</button>
+    </div>
+    <div class="card">
+      <h2>PayPal</h2>
+      <p class="hint" id="walletText"></p>
+      <div class="row gap">
+        <button class="btn ghost grow" id="linkBtn">Link PayPal wallet</button>
+        <button class="btn ghost" id="unlinkBtn">Unlink</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Suppliers</h2>
+      <ul class="suppliers" id="supplierList"></ul>
+    </div>
+    <button class="btn danger block" id="resetBtn">Reset demo data</button>
+  </section>
+  </main>
+
+  <nav class="tabs">
+    <button data-tab="restock" class="active"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Restock</button>
+    <button data-tab="approvals"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Approve<b class="badge hidden" id="apprBadge">0</b></button>
+    <button data-tab="ledger"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 6h14M5 12h14M5 18h9"/></svg>Ledger</button>
+    <button data-tab="settings"><svg class="ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3z"/></svg>Guardrails</button>
+  </nav>
+  <div class="toast hidden" id="toast"></div>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
